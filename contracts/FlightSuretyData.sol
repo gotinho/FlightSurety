@@ -31,11 +31,13 @@ contract FlightSuretyData {
     */
     constructor
                                 (
+                                    address firstAirline
                                 ) 
                                 public 
     {
         contractOwner = msg.sender;
         _minFundCollateral = 10 ether;
+        airlines[firstAirline].registered = true;
     }
 
     /********************************************************************************************/
