@@ -111,11 +111,11 @@ contract FlightSuretyData {
         delete authorizedContracts[contractAddress];
     }
 
-    function isAirline(address airline) external view requireContractOwner returns(bool) {
+    function isAirline(address airline) external view returns(bool) {
         return airlines[airline].registered;
     }
    
-    function getAirlineDepositedValue(address airline) external view requireContractOwner returns(uint256) {
+    function getAirlineDepositedValue(address airline) external view requireAuthorizedCaller returns(uint256) {
         return airlines[airline].depositedValue;
     }
 
