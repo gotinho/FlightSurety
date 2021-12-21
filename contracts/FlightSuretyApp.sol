@@ -5,6 +5,7 @@ pragma solidity ^0.4.25;
 // More info: https://www.nccgroup.trust/us/about-us/newsroom-and-events/blog/2018/november/smart-contract-insecurity-bad-arithmetic/
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./FlightSuretyData.sol";
 
 /************************************************** */
 /* FlightSurety Smart Contract                      */
@@ -33,6 +34,8 @@ contract FlightSuretyApp {
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
+
+    FlightSuretyData private _dataContract;
 
  
     /********************************************************************************************/
@@ -63,6 +66,16 @@ contract FlightSuretyApp {
         _;
     }
 
+    modifier requireRegisteredAirline() {
+        require(_dataContract.isAirline(msg.sender), "Not an airline.");
+        _;
+    }
+    
+    modifier requireFundedAirline() {
+        require(_dataContract.getAirlineDepositedValue(msg.sender) >= _dataContract.minFundCollateral(), "Airline insufficient fund.");
+        _;
+    }
+
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
@@ -73,10 +86,12 @@ contract FlightSuretyApp {
     */
     constructor
                                 (
+                                    address dataContractAddress
                                 ) 
                                 public 
     {
         contractOwner = msg.sender;
+        _dataContract = FlightSuretyData(dataContractAddress);
     }
 
     /********************************************************************************************/
@@ -101,12 +116,16 @@ contract FlightSuretyApp {
     *
     */   
     function registerAirline
-                            (   
+                            (
+                                address newAirline   
                             )
                             external
-                            pure
+                            requireRegisteredAirline
+                            requireFundedAirline
                             returns(bool success, uint256 votes)
     {
+        require(!_dataContract.isAirline(newAirline),"Airline already registered.");
+        _dataContract.registerAirline(newAirline);
         return (success, 0);
     }
 
@@ -119,7 +138,7 @@ contract FlightSuretyApp {
                                 (
                                 )
                                 external
-                                pure
+                                view
     {
 
     }
@@ -138,8 +157,12 @@ contract FlightSuretyApp {
                                 internal
                                 pure
     {
-    }
+        //bytes32 key = getFlightKey(airline, flight, timestamp);
+        getFlightKey(airline, flight, timestamp);
+        if(statusCode == STATUS_CODE_LATE_AIRLINE){
 
+        }
+    }
 
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus

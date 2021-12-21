@@ -5,12 +5,20 @@ import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 contract FlightSuretyData {
     using SafeMath for uint256;
 
+    struct Airline {
+        bool registered;
+        uint256 depositedValue;
+    }
+
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
+    uint256 private _minFundCollateral;
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
+    mapping(address => bool) private authorizedContracts;
+    mapping(address => Airline) private airlines;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -27,6 +35,7 @@ contract FlightSuretyData {
                                 public 
     {
         contractOwner = msg.sender;
+        _minFundCollateral = 10 ether;
     }
 
     /********************************************************************************************/
@@ -53,6 +62,11 @@ contract FlightSuretyData {
     modifier requireContractOwner()
     {
         require(msg.sender == contractOwner, "Caller is not contract owner");
+        _;
+    }
+
+    modifier requireAuthorizedCaller() {
+        require(authorizedContracts[msg.sender], "Caller is not authorized");
         _;
     }
 
@@ -89,6 +103,30 @@ contract FlightSuretyData {
         operational = mode;
     }
 
+    function authorizeCaller (address contractAddress) external requireContractOwner {
+        authorizedContracts[contractAddress] = true;
+    }
+    
+    function deauthorizeCaller (address contractAddress) external requireContractOwner {
+        delete authorizedContracts[contractAddress];
+    }
+
+    function isAirline(address airline) external view requireContractOwner returns(bool) {
+        return airlines[airline].registered;
+    }
+   
+    function getAirlineDepositedValue(address airline) external view requireContractOwner returns(uint256) {
+        return airlines[airline].depositedValue;
+    }
+
+    function minFundCollateral() external view returns(uint256) {
+        return _minFundCollateral;
+    }
+
+    function setMinFundCollateral(uint256 value) external requireContractOwner {
+        _minFundCollateral = value;
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -100,10 +138,12 @@ contract FlightSuretyData {
     */   
     function registerAirline
                             (   
+                                address newAirline
                             )
-                            external
-                            pure
+                            external 
+                            requireAuthorizedCaller
     {
+        airlines[newAirline].registered = true;
     }
 
 
