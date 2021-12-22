@@ -125,10 +125,27 @@ contract FlightSuretyApp {
                             returns(bool success, uint256 votes)
     {
         require(!_dataContract.isAirline(newAirline),"Airline already registered.");
-        _dataContract.registerAirline(newAirline);
-        return (success, 0);
+        require(!_dataContract.hasVoted(newAirline, msg.sender),"Already voted for airline.");
+
+        success = false;
+        if(_dataContract.airlinesCount() < 4){
+            _dataContract.registerAirline(newAirline);
+            success = true;
+        } else {
+            _dataContract.incrementVote(newAirline, msg.sender);
+            votes = _dataContract.getVotesCount(newAirline);
+            if(votes >= _dataContract.airlinesCount().div(2)){
+                _dataContract.registerAirline(newAirline);
+                success = true;
+            }
+        }
+        return (success, votes);
     }
 
+    function deposit() public payable requireRegisteredAirline {
+        _dataContract.fund.value(msg.value)();
+        _dataContract.incrementDepositedValue(msg.sender, msg.value);
+    }
 
    /**
     * @dev Register a future flight for insuring.

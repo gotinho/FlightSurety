@@ -8,6 +8,8 @@ contract FlightSuretyData {
     struct Airline {
         bool registered;
         uint256 depositedValue;
+        mapping(address => bool) voted;
+        uint256 votesCount;
     }
 
     /********************************************************************************************/
@@ -19,6 +21,7 @@ contract FlightSuretyData {
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedContracts;
     mapping(address => Airline) private airlines;
+    uint256 private _airlinesCount;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -38,6 +41,7 @@ contract FlightSuretyData {
         contractOwner = msg.sender;
         _minFundCollateral = 10 ether;
         airlines[firstAirline].registered = true;
+        _airlinesCount = 1;
     }
 
     /********************************************************************************************/
@@ -117,7 +121,7 @@ contract FlightSuretyData {
         return airlines[airline].registered;
     }
    
-    function getAirlineDepositedValue(address airline) external view requireAuthorizedCaller returns(uint256) {
+    function getAirlineDepositedValue(address airline) external view returns(uint256) {
         return airlines[airline].depositedValue;
     }
 
@@ -129,9 +133,27 @@ contract FlightSuretyData {
         _minFundCollateral = value;
     }
 
+    function hasVoted(address newAirline, address voter) external view returns(bool){
+        return airlines[newAirline].voted[voter];
+    }
+
+    function getVotesCount(address newAirline) external view returns(uint256){
+        return airlines[newAirline].votesCount;
+    }
+
+    function airlinesCount() external view returns(uint256) {
+        return _airlinesCount;
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
+
+
+    function incrementVote(address newAirline, address voter) external requireAuthorizedCaller {
+        airlines[newAirline].voted[voter] = true;
+        airlines[newAirline].votesCount = airlines[newAirline].votesCount.add(1);
+    }
 
    /**
     * @dev Add an airline to the registration queue
@@ -146,6 +168,7 @@ contract FlightSuretyData {
                             requireAuthorizedCaller
     {
         airlines[newAirline].registered = true;
+        _airlinesCount = _airlinesCount.add(1);
     }
 
 
@@ -196,7 +219,12 @@ contract FlightSuretyData {
                             )
                             public
                             payable
+                            requireAuthorizedCaller
     {
+    }
+
+    function incrementDepositedValue(address airline, uint256 value) public requireAuthorizedCaller {
+        airlines[airline].depositedValue = airlines[airline].depositedValue.add(value);
     }
 
     function getFlightKey
