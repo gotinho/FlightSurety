@@ -127,19 +127,18 @@ contract FlightSuretyApp {
         require(!_dataContract.isAirline(newAirline),"Airline already registered.");
         require(!_dataContract.hasVoted(newAirline, msg.sender),"Already voted for airline.");
 
-        success = false;
-        if(_dataContract.airlinesCount() < 4){
+        if(_dataContract.airlinesCount() < 4) {
             _dataContract.registerAirline(newAirline);
-            success = true;
+            return (true, 0);
         } else {
             _dataContract.incrementVote(newAirline, msg.sender);
             votes = _dataContract.getVotesCount(newAirline);
             if(votes >= _dataContract.airlinesCount().div(2)){
                 _dataContract.registerAirline(newAirline);
-                success = true;
+                return (true, votes);
             }
+            return (false, votes);
         }
-        return (success, votes);
     }
 
     function deposit() public payable requireRegisteredAirline {
