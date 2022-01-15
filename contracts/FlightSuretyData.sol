@@ -31,6 +31,7 @@ contract FlightSuretyData {
     mapping(address => bool) private authorizedContracts;
     mapping(address => Airline) private airlines;
     uint256 private _airlinesCount;
+    mapping(address => uint256) balances;                               // Keep passengers balances for withdraw 
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
