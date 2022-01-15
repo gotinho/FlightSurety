@@ -68,6 +68,16 @@ contract FlightSuretyApp {
         _;
     }
 
+    modifier requireRegisteredFlight(address airline, string flight, uint256 timestamp) {
+        require(_dataContract.isFlightRegistered(getFlightKey(airline, flight, timestamp)), "Flight not registered.");
+        _;
+    }
+    
+    modifier requireInPurchasePeriod(address airline, string flight, uint256 timestamp) {
+        require(_dataContract.getFlightStatus(getFlightKey(airline, flight, timestamp)) == STATUS_CODE_UNKNOWN, "Period for buying flight insurance has ended.");
+        _;
+    }
+
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
@@ -157,6 +167,16 @@ contract FlightSuretyApp {
     {
         require(!_dataContract.isFlightRegistered(getFlightKey(msg.sender, flight, timestamp)),"Fight already registered.");
         _dataContract.registerFlight(msg.sender, flight, timestamp);
+    }
+
+    /**
+     * Passenger purchase insurance for flight
+     */
+    function purchaseInsurance(address airline, string flight, uint256 timestamp) public
+        requireRegisteredFlight(airline,flight,timestamp)
+        requireInPurchasePeriod(airline,flight,timestamp)
+    {
+        require(msg.value < 1 ether, "Can not purchase insurance for more de then 1 ether");
     }
 
    /**

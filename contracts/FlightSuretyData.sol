@@ -158,6 +158,10 @@ contract FlightSuretyData {
     function isFlightRegistered(bytes32 key) external view returns(bool){
         return flights[key].isRegistered;
     }
+    
+    function getFlightStatus(bytes32 key) external view returns(uint8){
+        return flights[key].statusCode;
+    }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
