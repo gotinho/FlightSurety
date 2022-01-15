@@ -45,7 +45,7 @@ contract FlightSuretyApp {
     modifier requireIsOperational()
     {
          // Modify to call data contract's status
-        require(true, "Contract is currently not operational");
+        require(isOperational(), "Contract is currently not operational");
         _;  // All modifiers require an "_" which indicates where the function body will be added
     }
 
