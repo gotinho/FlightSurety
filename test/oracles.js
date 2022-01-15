@@ -9,6 +9,7 @@ contract('Oracles', async (accounts) => {
   before('setup contract', async () => {
     config = await Test.Config(accounts);
 
+    console.log(accounts);
     // Watch contract events
     const STATUS_CODE_UNKNOWN = 0;
     const STATUS_CODE_ON_TIME = 10;

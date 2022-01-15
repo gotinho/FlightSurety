@@ -11,7 +11,16 @@ contract FlightSuretyData {
         mapping(address => bool) voted;
         uint256 votesCount;
     }
-
+    
+    struct Flight {
+        bool isRegistered;
+        uint8 statusCode;
+        uint256 updatedTimestamp;        
+        address airline;
+        string code;
+    }
+    mapping(bytes32 => Flight) private flights;
+    
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
@@ -145,12 +154,26 @@ contract FlightSuretyData {
         return _airlinesCount;
     }
 
+    function isFlightRegistered(bytes32 key) external view returns(bool){
+        return flights[key].isRegistered;
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    /**
+     * Register a future flight
+     */
+    function registerFlight(address airline, string flight, uint256 timestamp) external requireIsOperational requireAuthorizedCaller {
+        bytes32 key = getFlightKey(airline, flight, timestamp);
+        flights[key] = Flight(true, 0, timestamp, airline, flight);
+    }
 
-    function incrementVote(address newAirline, address voter) external requireAuthorizedCaller {
+    /**
+     * Increment the votes count for a new airline in the registration queue process
+     */
+    function incrementVote(address newAirline, address voter) external requireAuthorizedCaller requireIsOperational {
         airlines[newAirline].voted[voter] = true;
         airlines[newAirline].votesCount = airlines[newAirline].votesCount.add(1);
     }
@@ -165,6 +188,7 @@ contract FlightSuretyData {
                                 address newAirline
                             )
                             external 
+                            requireIsOperational
                             requireAuthorizedCaller
     {
         airlines[newAirline].registered = true;
@@ -181,6 +205,7 @@ contract FlightSuretyData {
                             )
                             external
                             payable
+                            requireIsOperational
     {
 
     }
@@ -219,11 +244,15 @@ contract FlightSuretyData {
                             )
                             public
                             payable
+                            requireIsOperational
                             requireAuthorizedCaller
     {
     }
 
-    function incrementDepositedValue(address airline, uint256 value) public requireAuthorizedCaller {
+    /**
+     * Increment airline initial funding
+     */
+    function incrementDepositedValue(address airline, uint256 value) public requireIsOperational requireAuthorizedCaller {
         airlines[airline].depositedValue = airlines[airline].depositedValue.add(value);
     }
 

@@ -121,17 +121,15 @@ contract('Flight Surety Tests', async (accounts) => {
     });
 
     it('(Multiparty Consensus not required) regiter fifth ariline requires multi-party consensus of 50%', async () => {
-        let ethValue = web3.utils.toWei("10", "ether");
         let airline2 = accounts[2];
 
         let airline5 = accounts[5];
 
-        
         await config.flightSuretyApp.registerAirline(airline5, { from: config.firstAirline });
-        let isAirline = await config.flightSuretyData.isAirline(airline5);    
+        let isAirline = await config.flightSuretyData.isAirline(airline5);
         let airlineCount = await config.flightSuretyData.airlinesCount();
         let votes = await config.flightSuretyData.getVotesCount(airline5);
-    
+
         assert.equal(votes, 1);
         assert.equal(isAirline, false, "Airline shouldn't be registered.");
         assert.equal(airlineCount, 4);
@@ -140,11 +138,32 @@ contract('Flight Surety Tests', async (accounts) => {
         isAirline = await config.flightSuretyData.isAirline(airline5);
         airlineCount = await config.flightSuretyData.airlinesCount();
         votes = await config.flightSuretyData.getVotesCount(airline5);
-        
+
         assert.equal(votes, "2", "2 vote for airline");
         assert.equal(isAirline, true, "Airline shoud be registered now.");
         assert.equal(airlineCount, 5);
+    });
 
+
+    it('(airline) register flight', async () => {
+        let airline = config.firstAirline;
+        let flight = 'TE1921';
+        let timestamp = 1642265173;
+
+        await config.flightSuretyApp.registerFlight(flight, timestamp, { from: airline });
+    });
+
+    it('(airline) cannot register duplicate flight', async () => {
+        let airline = config.firstAirline;
+        let flight = 'TE1921';
+        let timestamp = 1642265173;
+
+        let registered = false;
+        try {
+            await config.flightSuretyApp.registerFlight(flight, timestamp, { from: airline });
+            registered = true;
+        } catch (error) { }
+        assert.isFalse(registered, 'duplicate flight registered');
     });
 
 });
