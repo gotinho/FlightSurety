@@ -18,6 +18,9 @@ contract FlightSuretyData {
         uint256 updatedTimestamp;        
         address airline;
         string code;
+        mapping(address => uint256) passengerInsuranceValue;
+        address[] passengers;
+        uint256 passengersCount;
     }
     mapping(bytes32 => Flight) private flights;
     
@@ -163,6 +166,18 @@ contract FlightSuretyData {
         return flights[key].statusCode;
     }
 
+    function getPassengersCount(bytes32 key) external view returns(uint256){
+        return flights[key].passengersCount;
+    }
+
+    function getPassenger(bytes32 key, uint256 index) external view returns(address){
+        return flights[key].passengers[index];
+    }
+
+    function getPassengerInsuranceValue(bytes32 key, address passenger) external view returns(uint256){
+        return flights[key].passengerInsuranceValue[passenger];
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -172,7 +187,11 @@ contract FlightSuretyData {
      */
     function registerFlight(address airline, string flight, uint256 timestamp) external requireIsOperational requireAuthorizedCaller {
         bytes32 key = getFlightKey(airline, flight, timestamp);
-        flights[key] = Flight(true, 0, timestamp, airline, flight);
+        Flight storage f = flights[key];
+        f.isRegistered = true;
+        f.updatedTimestamp = timestamp;
+        f.code = flight;
+        f.airline = airline;
     }
 
     /**
@@ -206,13 +225,20 @@ contract FlightSuretyData {
     *
     */   
     function buy
-                            (                             
-                            )
-                            external
-                            payable
-                            requireIsOperational
+                (
+                    bytes32 key,
+                    address passenger,
+                    uint256 value                      
+                )
+                external
+                payable
+                requireIsOperational
+                requireAuthorizedCaller
     {
-
+        Flight storage flight = flights[key];
+        flight.passengers.push(passenger);
+        flight.passengerInsuranceValue[passenger] = value;
+        flight.passengersCount = flight.passengersCount.add(1);
     }
 
     /**

@@ -172,11 +172,14 @@ contract FlightSuretyApp {
     /**
      * Passenger purchase insurance for flight
      */
-    function purchaseInsurance(address airline, string flight, uint256 timestamp) public
+    function purchaseInsurance(address airline, string flight, uint256 timestamp) public payable
         requireRegisteredFlight(airline,flight,timestamp)
         requireInPurchasePeriod(airline,flight,timestamp)
     {
-        require(msg.value < 1 ether, "Can not purchase insurance for more de then 1 ether");
+        bytes32 key = getFlightKey(airline, flight, timestamp);
+        require(msg.value <= 1 ether, "Can not purchase insurance for more de then 1 ether");
+        require(_dataContract.getPassengerInsuranceValue(key, msg.sender) == 0, "Insurance already bought.");
+        _dataContract.buy.value(msg.value)(key, msg.sender, msg.value);
     }
 
    /**
