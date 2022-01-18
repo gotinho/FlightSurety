@@ -120,7 +120,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
     });
 
-    it('(Multiparty Consensus not required) regiter fifth ariline requires multi-party consensus of 50%', async () => {
+    it('(Multiparty Consensus required) regiter fifth ariline requires multi-party consensus of 50%', async () => {
         let airline2 = accounts[2];
 
         let airline5 = accounts[5];
@@ -164,6 +164,25 @@ contract('Flight Surety Tests', async (accounts) => {
             registered = true;
         } catch (error) { }
         assert.isFalse(registered, 'duplicate flight registered');
+    });
+
+    it('(passenger) cannot purchase insurance greater then 1 eather', async () => {
+        let airline = config.firstAirline;
+        let flight = 'TE1921';
+        let timestamp = 1642265173;
+
+        let passenger = accounts[6];
+        let value = web3.utils.toWei('1.1', 'ether');
+        let bought = false;
+
+        try {
+            await config.flightSuretyApp.purchaseInsurance(airline, flight, timestamp, { from: passenger, value })
+            bought = true;
+        } catch (error) {
+            //console.log(error);
+        }
+
+        assert.isFalse(bought, 'Can not purchase insurance for more de then 1 ether');
     });
 
 });
