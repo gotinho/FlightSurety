@@ -185,4 +185,23 @@ contract('Flight Surety Tests', async (accounts) => {
         assert.isFalse(bought, 'Can not purchase insurance for more de then 1 ether');
     });
 
+    it('(passenger) purchase insurance', async () => {
+        let airline = config.firstAirline;
+        let flight = 'TE1921';
+        let timestamp = 1642265173;
+
+        let key = web3.utils.soliditySha3(airline, flight, timestamp);
+
+        let passenger = accounts[6];
+        let value = web3.utils.toWei('1', 'ether');
+
+        await config.flightSuretyApp.purchaseInsurance(airline, flight, timestamp, { from: passenger, value });
+
+        let count = await config.flightSuretyData.getPassengersCount(key);
+        assert.equal(count.toNumber(), 1);
+        
+        let insuranceValue = await config.flightSuretyData.getPassengerInsuranceValue(key, passenger);
+        assert.equal(insuranceValue.toString(), value);
+    });
+
 });
