@@ -19,13 +19,33 @@
         </button>
     </nav>
 
-    <main class="container">
+    <main >
+        <div class="container top-400">
+            <div id="display-wrapper" class="top-20">
+            </div>
+            <div class="row top-20">
+                <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            </div>
+        </div>
+        
+        <div class="container top-20">
+            <h2>Airline</h2>
+            As <select id="airlines"></select>
+            
+            <h3 class="top-10">Deposit</h3>
+            <input placeholder="Amount Ether" id="deposit-value"/>
+            <button type="button" id="btn-airline-deposit">Deposit</button>
+            
+            <h3 class="top-10">Register Airline</h3>
+            New Airline <select id="airlines2"></select>
+            <button type="button" id="btn-register-airline">Vote</button>
 
-        <div id="display-wrapper" class="top-20">
+            <h3 class="top-10">Airline History</h3>
+            <div id="airline-events">
+
+            </div>
         </div>
-        <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
-        </div>
+        
     </main>
 
 </body>
