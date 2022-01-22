@@ -9,8 +9,8 @@ contract FlightSuretyData {
         bool registered;
         uint256 depositedValue;
         uint256 votesCount;
+        mapping(address => bool) voted;
     }
-    mapping(bytes32 => bool) votes;
 
 
     struct Flight {
@@ -147,12 +147,8 @@ contract FlightSuretyData {
         _minFundCollateral = value;
     }
 
-    function getVote(address a1, address a2) internal pure returns(bytes32){
-        return keccak256(abi.encodePacked(a1, a2));
-    }
-
     function hasVoted(address forAirline, address byAirline) external view returns(bool){
-        return votes[getVote(forAirline, byAirline)];
+        return airlines[forAirline].voted[byAirline];
     }
 
     function getVotesCount(address airline) external view returns(uint256){
@@ -203,7 +199,7 @@ contract FlightSuretyData {
      * Increment the votes count for a new airline in the registration queue process
      */   
     function addVote(address forAirline, address byAirline) external requireAuthorizedCaller requireIsOperational returns (uint256) {
-        votes[getVote(forAirline,byAirline)] = true;
+        airlines[forAirline].voted[byAirline] = true;
         airlines[forAirline].votesCount = airlines[forAirline].votesCount + 1;
         return airlines[forAirline].votesCount;
     }    

@@ -56,7 +56,7 @@ export default class Contract {
     }
 
     registerAirline(asAirline, forAirline) {
-        return this.flightSuretyApp.methods.registerAirline(forAirline).send({ from: asAirline });
+        return this.flightSuretyApp.methods.registerAirline(forAirline).send({ from: asAirline, gas:180000 });
     }
 
     deposit(asAirline, value) {
