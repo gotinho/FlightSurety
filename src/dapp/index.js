@@ -2,6 +2,7 @@
 import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
+import Web3 from 'web3';
 
 
 (async () => {
@@ -9,6 +10,26 @@ import './flightsurety.css';
     let result = null;
 
     let contract = new Contract('localhost', () => {
+
+        // events subscription
+        contract.subscribeAirlineDeposit((error, event) => {
+            const airline = event.returnValues.airline;
+            const value = Web3.utils.fromWei(event.returnValues.value, 'ether');
+
+            DOM.elid('airline-events').append(DOM.makeElement('p', `Airline ${airline} has deposited ${value} ETH`));
+        });
+        contract.subscribeAirlineRegistered((error, event) => {
+            const airline = event.returnValues.airline;
+            const votes = event.returnValues.votes;
+
+            DOM.elid('airline-events').append(DOM.makeElement('p', `Airline ${airline} registered with ${votes} votes`));
+        });
+        contract.subscribeAirlineVoted((error, event) => {
+            const airline = event.returnValues.airline;
+            const votedFor = event.returnValues.votedFor;
+
+            DOM.elid('airline-events').append(DOM.makeElement('p', `Airline ${airline} has voted for ${votedFor}`));
+        });
 
         // Read transaction
         contract.isOperational((error, result) => {
@@ -27,24 +48,47 @@ import './flightsurety.css';
         });
 
 
+        // Airlines select
         contract.airlines.forEach((address, i) => {
             DOM.elid('airlines').append(DOM.makeElement('option', { value: address }, 'Airline ' + i));
             DOM.elid('airlines2').append(DOM.makeElement('option', { value: address }, 'Airline ' + i));
+        });
+        DOM.elid('airlines').addEventListener('change', (event) => {
+            console.log(event.target.value);
+            DOM.elid('airline-address').innerText = event.target.value;
         });
 
         // Deposit 
         DOM.elid('btn-airline-deposit').onclick = async () => {
             const value = DOM.elid('deposit-value').value;
             const asAirline = DOM.elid('airlines').value;
-
-            await contract.deposit(asAirline, value);
+            try {
+                await contract.deposit(asAirline, value);
+            } catch (error) {
+                console.log(error.message);
+                DOM.elid('airline-events').append(DOM.makeElement('p', { className: 'text-error' }, error.message));
+            }
         };
-
+        
         // Register airline
         DOM.elid('btn-register-airline').onclick = async () => {
             const asAirline = DOM.elid('airlines').value;
             const forAirline = DOM.elid('airlines2').value;
-            await contract.registerAirline(asAirline, forAirline);
+            try {
+                await contract.registerAirline(asAirline, forAirline);
+                // await contract.registerAirline(asAirline, contract.airlines[1]);
+                // console.log('voto 1');
+                // await contract.registerAirline(asAirline, contract.airlines[2]);
+                // console.log('voto 2');
+                // await contract.registerAirline(asAirline, contract.airlines[3]);
+                // console.log('voto 3');
+                // await contract.registerAirline(asAirline, contract.airlines[4]);
+                // console.log('voto 4');
+                
+            } catch (error) {
+                console.error(error.data);
+                DOM.elid('airline-events').append(DOM.makeElement('p', { className: 'text-error' }, error.message));
+            }
         }
 
     });

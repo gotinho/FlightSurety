@@ -57,9 +57,19 @@ export default class Contract {
     registerAirline(asAirline, forAirline) {
         return this.flightSuretyApp.methods.registerAirline(forAirline).send({ from: asAirline });
     }
-    
+
     deposit(asAirline, value) {
         const weiValue = this.web3.utils.toWei(value);
         return this.flightSuretyApp.methods.deposit().send({ from: asAirline, value: weiValue });
+    }
+
+    subscribeAirlineDeposit(callback) {
+        this.flightSuretyApp.events.AirlineDeposit(callback);
+    }
+    subscribeAirlineRegistered(callback) {
+        this.flightSuretyApp.events.AirlineRegistered(callback);
+    }
+    subscribeAirlineVoted(callback) {
+        this.flightSuretyApp.events.AirlineVoted(callback);
     }
 }

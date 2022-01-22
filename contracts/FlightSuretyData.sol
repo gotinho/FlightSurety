@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.4.24;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -8,10 +8,11 @@ contract FlightSuretyData {
     struct Airline {
         bool registered;
         uint256 depositedValue;
-        mapping(address => bool) voted;
         uint256 votesCount;
     }
-    
+    mapping(bytes32 => bool) votes;
+
+
     struct Flight {
         bool isRegistered;
         uint8 statusCode;
@@ -146,12 +147,16 @@ contract FlightSuretyData {
         _minFundCollateral = value;
     }
 
-    function hasVoted(address newAirline, address voter) external view returns(bool){
-        return airlines[newAirline].voted[voter];
+    function getVote(address a1, address a2) internal pure returns(bytes32){
+        return keccak256(abi.encodePacked(a1, a2));
     }
 
-    function getVotesCount(address newAirline) external view returns(uint256){
-        return airlines[newAirline].votesCount;
+    function hasVoted(address forAirline, address byAirline) external view returns(bool){
+        return votes[getVote(forAirline, byAirline)];
+    }
+
+    function getVotesCount(address airline) external view returns(uint256){
+        return airlines[airline].votesCount;
     }
 
     function airlinesCount() external view returns(uint256) {
@@ -196,11 +201,12 @@ contract FlightSuretyData {
 
     /**
      * Increment the votes count for a new airline in the registration queue process
-     */
-    function incrementVote(address newAirline, address voter) external requireAuthorizedCaller requireIsOperational {
-        airlines[newAirline].voted[voter] = true;
-        airlines[newAirline].votesCount = airlines[newAirline].votesCount.add(1);
-    }
+     */   
+    function addVote(address forAirline, address byAirline) external requireAuthorizedCaller requireIsOperational returns (uint256) {
+        votes[getVote(forAirline,byAirline)] = true;
+        airlines[forAirline].votesCount = airlines[forAirline].votesCount + 1;
+        return airlines[forAirline].votesCount;
+    }    
 
    /**
     * @dev Add an airline to the registration queue

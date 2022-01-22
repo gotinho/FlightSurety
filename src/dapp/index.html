@@ -30,15 +30,16 @@
         
         <div class="container top-20">
             <h2>Airline</h2>
-            As <select id="airlines"></select>
+            As <select id="airlines"><option value=""> -- Select Airline -- </option></select>
+            <span id="airline-address"></span>
             
             <h3 class="top-10">Deposit</h3>
-            <input placeholder="Amount Ether" id="deposit-value"/>
-            <button type="button" id="btn-airline-deposit">Deposit</button>
+            <input placeholder="Amount Ether" id="deposit-value" value="10"/>
+            <button type="button" class="btn btn-primary" id="btn-airline-deposit">Deposit</button>
             
             <h3 class="top-10">Register Airline</h3>
-            New Airline <select id="airlines2"></select>
-            <button type="button" id="btn-register-airline">Vote</button>
+            New Airline <select id="airlines2"><option> -- Select Airline -- </option></select>
+            <button type="button" class="btn btn-primary" id="btn-register-airline">Vote</button>
 
             <h3 class="top-10">Airline History</h3>
             <div id="airline-events">

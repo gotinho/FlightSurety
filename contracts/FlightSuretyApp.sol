@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.4.24;
 
 // It's important to avoid vulnerabilities due to numeric overflow bugs
 // OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
@@ -29,6 +29,10 @@ contract FlightSuretyApp {
 
     FlightSuretyData private _dataContract;
 
+
+    event AirlineDeposit(address airline, uint256 value);
+    event AirlineRegistered(address airline, uint256 votes);
+    event AirlineVoted(address airline, address votedFor);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -112,13 +116,15 @@ contract FlightSuretyApp {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    
+
    /**
     * @dev Add an airline to the registration queue
     *
     */
     function registerAirline
                             (
-                                address newAirline
+                                address airline
                             )
                             external
                             requireIsOperational
@@ -126,20 +132,22 @@ contract FlightSuretyApp {
                             requireFundedAirline
                             returns(bool success, uint256 votes)
     {
-        require(!_dataContract.isAirline(newAirline),"Airline already registered.");
-        require(!_dataContract.hasVoted(newAirline, msg.sender),"Already voted for airline.");
+        require(!_dataContract.isAirline(airline),"Airline already registered.");
+        require(!_dataContract.hasVoted(airline, msg.sender),"Double voting.");
 
         if(_dataContract.airlinesCount() < 4) {
-            _dataContract.registerAirline(newAirline);
+            _dataContract.registerAirline(airline);
+            emit AirlineRegistered(airline, 0);
             return (true, 0);
         } else {
-            _dataContract.incrementVote(newAirline, msg.sender);
-            votes = _dataContract.getVotesCount(newAirline);
-            if(votes >= _dataContract.airlinesCount().div(2)){
-                _dataContract.registerAirline(newAirline);
-                return (true, votes);
+            votes = _dataContract.addVote(airline, msg.sender);
+            emit AirlineVoted(msg.sender, airline);
+            if(votes.mul(2) >= _dataContract.airlinesCount()){
+                _dataContract.registerAirline(airline);
+                emit AirlineRegistered(airline, votes);
+                 return (true, votes);
             }
-            return (false, votes);
+            return (true, votes);
         }
     }
 
@@ -149,6 +157,7 @@ contract FlightSuretyApp {
     function deposit() public payable requireIsOperational requireRegisteredAirline {
         _dataContract.fund.value(msg.value)();
         _dataContract.incrementDepositedValue(msg.sender, msg.value);
+        emit AirlineDeposit(msg.sender, msg.value);
     }
 
    /**

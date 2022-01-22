@@ -47,3 +47,7 @@ label.form {
 input {
     margin-right: 30px;
 }
+
+.text-error{
+    color: red;
+}
