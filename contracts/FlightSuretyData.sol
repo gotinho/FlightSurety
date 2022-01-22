@@ -200,7 +200,7 @@ contract FlightSuretyData {
      */   
     function addVote(address forAirline, address byAirline) external requireAuthorizedCaller requireIsOperational returns (uint256) {
         airlines[forAirline].voted[byAirline] = true;
-        airlines[forAirline].votesCount = airlines[forAirline].votesCount + 1;
+        airlines[forAirline].votesCount = airlines[forAirline].votesCount.add(1);
         return airlines[forAirline].votesCount;
     }    
 
