@@ -5,6 +5,29 @@ import './flightsurety.css';
 import Web3 from 'web3';
 
 
+let flights = [
+    {
+        flight: 'NP1212',
+        timestamp: 1642860000
+    },
+    {
+        flight: 'MA2311',
+        timestamp: 1642960000
+    },
+    {
+        flight: 'KL5501',
+        timestamp: 1642960000
+    },
+    {
+        flight: 'KL5502',
+        timestamp: 1642987000
+    },
+    {
+        flight: 'TR0067',
+        timestamp: 1642987500
+    }
+];
+
 (async () => {
 
     let result = null;
@@ -53,9 +76,18 @@ import Web3 from 'web3';
             DOM.elid('airlines').append(DOM.makeElement('option', { value: address }, 'Airline ' + i));
             DOM.elid('airlines2').append(DOM.makeElement('option', { value: address }, 'Airline ' + i));
         });
-        DOM.elid('airlines').addEventListener('change', (event) => {
-            console.log(event.target.value);
-            DOM.elid('airline-address').innerText = event.target.value;
+
+        async function loadAirlineInfo() {
+            const address = DOM.elid('airlines').value;
+            DOM.elid('airline-address').innerText = address;
+            const registered = await contract.isAirlineRegistered(address);
+            DOM.elid('airline-registrered').innerText = registered;
+            const funds = await contract.getAirlineFunds(address);
+            DOM.elid('airline-funds').innerText = funds;
+        }
+
+        DOM.elid('airlines').addEventListener('change', () => {
+            loadAirlineInfo();
         });
 
         // Deposit 
@@ -64,32 +96,35 @@ import Web3 from 'web3';
             const asAirline = DOM.elid('airlines').value;
             try {
                 await contract.deposit(asAirline, value);
+                loadAirlineInfo();
             } catch (error) {
                 console.log(error.message);
                 DOM.elid('airline-events').append(DOM.makeElement('p', { className: 'text-error' }, error.message));
             }
         };
-        
+
         // Register airline
         DOM.elid('btn-register-airline').onclick = async () => {
             const asAirline = DOM.elid('airlines').value;
             const forAirline = DOM.elid('airlines2').value;
             try {
                 await contract.registerAirline(asAirline, forAirline);
-                // await contract.registerAirline(asAirline, contract.airlines[1]);
-                // console.log('voto 1');
-                // await contract.registerAirline(asAirline, contract.airlines[2]);
-                // console.log('voto 2');
-                // await contract.registerAirline(asAirline, contract.airlines[3]);
-                // console.log('voto 3');
-                // await contract.registerAirline(asAirline, contract.airlines[4]);
-                // console.log('voto 4');
-                
             } catch (error) {
                 console.error(error.data);
                 DOM.elid('airline-events').append(DOM.makeElement('p', { className: 'text-error' }, error.message));
             }
-        }
+        };
+
+        flights.forEach(async (f, i) => {
+            DOM.elid('airline-flight').append(DOM.makeElement('option', { value: i + 1 }, f.flight));
+        });
+
+        DOM.elid('btn-register-flight').onclick = async () => {
+            let airline = DOM.elid('airlines').value;
+            let f = flights[DOM.elid('airline-flight').value - 1];
+            await contract.registerFlight(airline, f.flight, f.timestamp);
+            f.airline = airline;
+        };
 
     });
 

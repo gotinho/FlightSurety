@@ -1,6 +1,8 @@
 import FlightSuretyApp from '../../build/contracts/FlightSuretyApp.json';
+import FlightSuretyData from '../../build/contracts/FlightSuretyData.json';
 import Config from './config.json';
 import Web3 from 'web3';
+
 
 export default class Contract {
     constructor(network, callback) {
@@ -8,6 +10,7 @@ export default class Contract {
         let config = Config[network];
         this.web3 = new Web3(new Web3.providers.WebsocketProvider(config.url));
         this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
+        this.flightSuretyData = new this.web3.eth.Contract(FlightSuretyData.abi, config.dataAddress);
         this.initialize(callback);
         this.owner = null;
         this.airlines = [];
@@ -56,12 +59,24 @@ export default class Contract {
     }
 
     registerAirline(asAirline, forAirline) {
-        return this.flightSuretyApp.methods.registerAirline(forAirline).send({ from: asAirline, gas:180000 });
+        return this.flightSuretyApp.methods.registerAirline(forAirline).send({ from: asAirline, gas: 180000 });
     }
 
     deposit(asAirline, value) {
         const weiValue = this.web3.utils.toWei(value);
         return this.flightSuretyApp.methods.deposit().send({ from: asAirline, value: weiValue });
+    }
+
+    isAirlineRegistered(address) {
+        return this.flightSuretyData.methods.isAirline(address).call();
+    }
+
+    getAirlineFunds(address) {
+        return this.flightSuretyData.methods.getAirlineDepositedValue(address).call();
+    }
+
+    registerFlight(airline, flight, timestamp) {
+        this.flightSuretyApp.methods.registerFlight(flight, timestamp).send({ from: airline, gas: 180000 });
     }
 
     subscribeAirlineDeposit(callback) {

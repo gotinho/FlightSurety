@@ -32,6 +32,10 @@
             <h2>Airline</h2>
             As <select id="airlines"><option value=""> -- Select Airline -- </option></select>
             <span id="airline-address"></span>
+            <div>
+                <div>Registered: <span id="airline-registrered"></span></div>
+                <div>Deposited Funds: <span id="airline-funds"></span></div>
+            </div>
             
             <h3 class="top-10">Deposit</h3>
             <input placeholder="Amount Ether" id="deposit-value" value="10"/>
@@ -40,6 +44,10 @@
             <h3 class="top-10">Register Airline</h3>
             New Airline <select id="airlines2"><option> -- Select Airline -- </option></select>
             <button type="button" class="btn btn-primary" id="btn-register-airline">Vote</button>
+            
+            <h3 class="top-10">Register Flight</h3>
+            <select id="airline-flight"><option>--</option></select>
+            <button type="button" class="btn btn-primary" id="btn-register-flight">Register</button>
 
             <h3 class="top-10">Airline History</h3>
             <div id="airline-events">
