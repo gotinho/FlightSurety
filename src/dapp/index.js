@@ -53,6 +53,12 @@ let flights = [
 
             DOM.elid('airline-events').append(DOM.makeElement('p', `Airline ${airline} has voted for ${votedFor}`));
         });
+        contract.subscribeFlightRegistered((error, event) => {
+            const airline = event.returnValues.airline;
+            const flight = event.returnValues.flight;
+
+            DOM.elid('airline-events').append(DOM.makeElement('p', `Airline ${airline} registered new flight ${flight}`));
+        });
 
         // Read transaction
         contract.isOperational((error, result) => {
@@ -122,8 +128,13 @@ let flights = [
         DOM.elid('btn-register-flight').onclick = async () => {
             let airline = DOM.elid('airlines').value;
             let f = flights[DOM.elid('airline-flight').value - 1];
-            await contract.registerFlight(airline, f.flight, f.timestamp);
-            f.airline = airline;
+            try {
+                await contract.registerFlight(airline, f.flight, f.timestamp);
+                f.airline = airline;
+            } catch (error) {
+                console.error(error.data);
+                DOM.elid('airline-events').append(DOM.makeElement('p', { className: 'text-error' }, error.message));
+            }
         };
 
     });

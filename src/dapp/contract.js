@@ -76,7 +76,7 @@ export default class Contract {
     }
 
     registerFlight(airline, flight, timestamp) {
-        this.flightSuretyApp.methods.registerFlight(flight, timestamp).send({ from: airline, gas: 180000 });
+        return this.flightSuretyApp.methods.registerFlight(flight, timestamp).send({ from: airline, gas: 180000 });
     }
 
     subscribeAirlineDeposit(callback) {
@@ -87,5 +87,8 @@ export default class Contract {
     }
     subscribeAirlineVoted(callback) {
         this.flightSuretyApp.events.AirlineVoted(callback);
+    }
+    subscribeFlightRegistered(callback) {
+        this.flightSuretyApp.events.FlightRegistered(callback);
     }
 }

@@ -33,6 +33,7 @@ contract FlightSuretyApp {
     event AirlineDeposit(address airline, uint256 value);
     event AirlineRegistered(address airline, uint256 votes);
     event AirlineVoted(address airline, address votedFor);
+    event FlightRegistered(address airline, string flight);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -176,6 +177,7 @@ contract FlightSuretyApp {
     {
         require(!_dataContract.isFlightRegistered(getFlightKey(msg.sender, flight, timestamp)),"Fight already registered.");
         _dataContract.registerFlight(msg.sender, flight, timestamp);
+        emit FlightRegistered(msg.sender, flight);
     }
 
     /**
