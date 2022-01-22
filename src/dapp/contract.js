@@ -12,6 +12,7 @@ export default class Contract {
         this.owner = null;
         this.airlines = [];
         this.passengers = [];
+        console.log(Web3.version);
     }
 
     initialize(callback) {

@@ -3,6 +3,8 @@ var Test = require('../config/testConfig.js');
 var BigNumber = require('bignumber.js');
 const { default: Web3 } = require('web3');
 
+console.log(web3.version);
+
 contract('Flight Surety Tests', async (accounts) => {
 
     var config;
@@ -142,6 +144,36 @@ contract('Flight Surety Tests', async (accounts) => {
         assert.equal(votes, "2", "2 vote for airline");
         assert.equal(isAirline, true, "Airline shoud be registered now.");
         assert.equal(airlineCount, 5);
+    });
+   
+    it('(Multiparty Consensus required) regiter sixth ariline requires multi-party consensus of 50%', async () => {
+        config.flightSuretyApp.AirlineVoted({}, function(error, event){
+            console.log(`${event.returnValues.airline} voted for ${event.returnValues.votedFor}`);
+        })
+
+        let airline2 = accounts[2];
+        let airline3 = accounts[3];
+
+        let airline6 = accounts[6];
+
+        await config.flightSuretyApp.registerAirline(airline6, { from: config.firstAirline });
+        await config.flightSuretyApp.registerAirline(airline6, { from: airline3 });
+        let isAirline = await config.flightSuretyData.isAirline(airline6);
+        let airlineCount = await config.flightSuretyData.airlinesCount();
+        let votes = await config.flightSuretyData.getVotesCount(airline6);
+
+        assert.equal(votes, 2);
+        assert.equal(isAirline, false, "Airline shouldn't be registered.");
+        assert.equal(airlineCount, 5);
+
+        await config.flightSuretyApp.registerAirline(airline6, { from: airline2 });
+        isAirline = await config.flightSuretyData.isAirline(airline6);
+        airlineCount = await config.flightSuretyData.airlinesCount();
+        votes = await config.flightSuretyData.getVotesCount(airline6);
+
+        assert.equal(votes, "3", "3 vote for airline");
+        assert.equal(isAirline, true, "Airline shoud be registered now.");
+        assert.equal(airlineCount, 6);
     });
 
 
