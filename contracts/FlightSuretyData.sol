@@ -24,6 +24,8 @@ contract FlightSuretyData {
         uint256 passengersCount;
     }
     mapping(bytes32 => Flight) private flights;
+    Flight[] private flightsList;
+    uint256 private flightsCount;
     
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
@@ -179,6 +181,20 @@ contract FlightSuretyData {
         return flights[key].passengerInsuranceValue[passenger];
     }
 
+    function getFlightsCount() public view returns(uint256){
+        return flightsCount;
+    }
+
+    function getFlight(uint256 index) public view returns(bool isRegistered, uint8 status, address airline, string flight, uint256 timestamp) {
+        Flight memory f = flightsList[index];
+        isRegistered = f.isRegistered;
+        status = f.statusCode;
+        airline = f.airline;
+        flight = f.code;
+        timestamp = f.updatedTimestamp;
+        return (isRegistered,status,airline,flight,timestamp);
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -193,6 +209,8 @@ contract FlightSuretyData {
         f.updatedTimestamp = timestamp;
         f.code = flight;
         f.airline = airline;
+        flightsList.push(f);
+        flightsCount = flightsCount.add(1);
     }
 
     /**

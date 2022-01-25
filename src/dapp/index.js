@@ -5,29 +5,6 @@ import './flightsurety.css';
 import Web3 from 'web3';
 
 
-let flights = [
-    {
-        flight: 'NP1212',
-        timestamp: 1642860000
-    },
-    {
-        flight: 'MA2311',
-        timestamp: 1642960000
-    },
-    {
-        flight: 'KL5501',
-        timestamp: 1642960000
-    },
-    {
-        flight: 'KL5502',
-        timestamp: 1642987000
-    },
-    {
-        flight: 'TR0067',
-        timestamp: 1642987500
-    }
-];
-
 (async () => {
 
     let result = null;
@@ -58,6 +35,8 @@ let flights = [
             const flight = event.returnValues.flight;
 
             DOM.elid('airline-events').append(DOM.makeElement('p', `Airline ${airline} registered new flight ${flight}`));
+
+            showFlights(contract);
         });
 
         // Read transaction
@@ -121,24 +100,22 @@ let flights = [
             }
         };
 
-        flights.forEach(async (f, i) => {
-            DOM.elid('airline-flight').append(DOM.makeElement('option', { value: i + 1 }, f.flight));
-        });
-
         DOM.elid('btn-register-flight').onclick = async () => {
             let airline = DOM.elid('airlines').value;
-            let f = flights[DOM.elid('airline-flight').value - 1];
+            let flight = DOM.elid('new-flight').value;
+            let timestamp = DOM.elid('new-flight-time').value;
             try {
-                await contract.registerFlight(airline, f.flight, f.timestamp);
-                f.airline = airline;
+                await contract.registerFlight(airline, flight, timestamp);
             } catch (error) {
                 console.error(error.data);
                 DOM.elid('airline-events').append(DOM.makeElement('p', { className: 'text-error' }, error.message));
             }
         };
 
+        
     });
-
+    
+    showFlights(contract);
 
 })();
 
@@ -155,10 +132,20 @@ function display(title, description, results) {
         section.appendChild(row);
     })
     displayDiv.append(section);
-
 }
 
-
+function showFlights(contract) {
+    contract.getRegisteredFlights().then( flights =>{
+        let table = DOM.elid('tb-flights');
+        table.innerHTML = '';
+        flights.forEach(f => {
+            let line = DOM.makeElement('tr');
+            line.appendChild(DOM.makeElement('td', f.flight));
+            line.appendChild(DOM.makeElement('td', f.airline));
+            table.appendChild(line);
+        });
+    });
+}
 
 
 

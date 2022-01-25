@@ -3,6 +3,28 @@ import FlightSuretyData from '../../build/contracts/FlightSuretyData.json';
 import Config from './config.json';
 import Web3 from 'web3';
 
+let flights = [
+    {
+        flight: 'NP1212',
+        timestamp: 1642860000
+    },
+    {
+        flight: 'MA2311',
+        timestamp: 1642960000
+    },
+    {
+        flight: 'KL5501',
+        timestamp: 1642960000
+    },
+    {
+        flight: 'KL5502',
+        timestamp: 1642987000
+    },
+    {
+        flight: 'TR0067',
+        timestamp: 1642987500
+    }
+];
 
 export default class Contract {
     constructor(network, callback) {
@@ -32,6 +54,17 @@ export default class Contract {
             while (this.passengers.length < 5) {
                 this.passengers.push(accts[counter++]);
             }
+
+            this.getAirlineFunds(this.airlines[0]).then(async funds => {
+                let value = new Number(this.web3.utils.fromWei(funds, 'ether'));
+
+                if (value < 10) {
+                    await this.deposit(this.airlines[0], '10');
+                }
+                flights.forEach(flight => {
+                    this.registerFlight(this.airlines[0], flight.flight, flight.timestamp);
+                });
+            });
 
             callback();
         });
@@ -76,7 +109,7 @@ export default class Contract {
     }
 
     registerFlight(airline, flight, timestamp) {
-        return this.flightSuretyApp.methods.registerFlight(flight, timestamp).send({ from: airline, gas: 180000 });
+        return this.flightSuretyApp.methods.registerFlight(flight, timestamp).send({ from: airline, gas: 300000 });
     }
 
     subscribeAirlineDeposit(callback) {
@@ -90,5 +123,26 @@ export default class Contract {
     }
     subscribeFlightRegistered(callback) {
         this.flightSuretyApp.events.FlightRegistered(callback);
+    }
+
+    async getRegisteredFlights() {
+        let count = await this.flightSuretyData.methods.getFlightsCount().call();
+        console.log(count);
+        let flights = [];
+        for (let i = 0; i < count; i++) {
+            try {
+                let result = await this.flightSuretyData.methods.getFlight(i).call();
+                flights.push({
+                    isRegistered: result[0],
+                    statusCode: result[1],
+                    airline: result[2],
+                    flight: result[3],
+                    timestamp: result[4],
+                });
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        return flights;
     }
 }

@@ -27,6 +27,24 @@
                 <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
             </div>
         </div>
+
+        <div class="container top-20">
+            <h2>Pessenger</h2>
+
+
+            <h3>Flights</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Airline</th>
+                    </tr>
+                </thead>
+                <tbody id="tb-flights">
+
+                </tbody>
+            </table>
+        </div>
         
         <div class="container top-20">
             <h2>Airline</h2>
@@ -46,7 +64,8 @@
             <button type="button" class="btn btn-primary" id="btn-register-airline">Vote</button>
             
             <h3 class="top-10">Register Flight</h3>
-            <select id="airline-flight"><option>--</option></select>
+            <input id="new-flight" placeholder="Flight"/>
+            <input id="new-flight-time" placeholder="Flight Time" type="number"/>
             <button type="button" class="btn btn-primary" id="btn-register-flight">Register</button>
 
             <h3 class="top-10">Airline History</h3>
