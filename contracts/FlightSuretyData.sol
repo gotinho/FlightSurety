@@ -195,6 +195,10 @@ contract FlightSuretyData {
         return (isRegistered,status,airline,flight,timestamp);
     }
 
+    function getBalance(address pessenger) public view returns(uint256) {
+        return balances[pessenger];
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/

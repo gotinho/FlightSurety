@@ -13,59 +13,81 @@
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
         <a class="navbar-brand" href="#">FlightSurety</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault"
-            aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
     </nav>
 
-    <main >
+    <main>
         <div class="container top-400">
             <div id="display-wrapper" class="top-20">
             </div>
             <div class="row top-20">
-                <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+                <label class="form">Flight</label> <input type="text" id="flight-number">
+                <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
             </div>
         </div>
 
         <div class="container top-20">
             <h2>Pessenger</h2>
 
+            <div class="top=10">
+                <label>Pessenger:</label>
+                <select id="pessenger">
+                    <option>Select Pessenger</option>
+                </select>
+            </div>
+            <div>
+                <span>Balance:</span> <span id="pessenger-balance"></span>
+                <button class="btn btn-success">Withdraw</button>
+            </div>
 
-            <h3>Flights</h3>
-            <table>
+
+            <h3>Flights Insurance</h3>
+            <div>
+                <input placeholder="Value ETH" id="insurance-value"/>
+            </div>
+            <table class="flights-table top-10">
                 <thead>
                     <tr>
                         <th>Flight</th>
                         <th>Airline</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="tb-flights">
 
                 </tbody>
             </table>
+
+            <div class="top-20" id="pessenger-history"></div>
         </div>
-        
+
         <div class="container top-20">
             <h2>Airline</h2>
-            As <select id="airlines"><option value=""> -- Select Airline -- </option></select>
+            As <select id="airlines">
+                <option value=""> -- Select Airline -- </option>
+            </select>
             <span id="airline-address"></span>
             <div>
                 <div>Registered: <span id="airline-registrered"></span></div>
                 <div>Deposited Funds: <span id="airline-funds"></span></div>
             </div>
-            
+
             <h3 class="top-10">Deposit</h3>
-            <input placeholder="Amount Ether" id="deposit-value" value="10"/>
+            <input placeholder="Amount Ether" id="deposit-value" value="10" />
             <button type="button" class="btn btn-primary" id="btn-airline-deposit">Deposit</button>
-            
+
             <h3 class="top-10">Register Airline</h3>
-            New Airline <select id="airlines2"><option> -- Select Airline -- </option></select>
+            New Airline <select id="airlines2">
+                <option> -- Select Airline -- </option>
+            </select>
             <button type="button" class="btn btn-primary" id="btn-register-airline">Vote</button>
-            
+
             <h3 class="top-10">Register Flight</h3>
-            <input id="new-flight" placeholder="Flight"/>
-            <input id="new-flight-time" placeholder="Flight Time" type="number"/>
+            <input id="new-flight" placeholder="Flight" />
+            <input id="new-flight-time" placeholder="Flight Time" type="number" />
             <button type="button" class="btn btn-primary" id="btn-register-flight">Register</button>
 
             <h3 class="top-10">Airline History</h3>
@@ -73,7 +95,7 @@
 
             </div>
         </div>
-        
+
     </main>
 
 </body>

@@ -51,3 +51,7 @@ input {
 .text-error{
     color: red;
 }
+
+.flights-table {
+    width: 100%;
+}

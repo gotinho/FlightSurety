@@ -124,6 +124,9 @@ export default class Contract {
     subscribeFlightRegistered(callback) {
         this.flightSuretyApp.events.FlightRegistered(callback);
     }
+    subscribePurchasedInsurance(callback) {
+        this.flightSuretyApp.events.PurchasedInsurance(callback);
+    }
 
     async getRegisteredFlights() {
         let count = await this.flightSuretyData.methods.getFlightsCount().call();
@@ -144,5 +147,14 @@ export default class Contract {
             }
         }
         return flights;
+    }
+
+    getPessengerBalance(pessenger) {
+        return this.flightSuretyData.methods.getBalance(pessenger).call();
+    }
+
+    buyInsurance(pessenger, value, airline, flight, timestamp) {
+        const wei = this.web3.utils.toWei(value);
+        return this.flightSuretyApp.methods.purchaseInsurance(airline, flight, timestamp).send({ from: pessenger, value: wei, gas: 200000 });
     }
 }
