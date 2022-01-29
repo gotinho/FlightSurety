@@ -39,6 +39,7 @@ contract FlightSuretyApp {
         string flight,
         uint256 value
     );
+    event PessengerWithdraw(address pessenger, uint256 value);
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -100,9 +101,7 @@ contract FlightSuretyApp {
         uint256 timestamp
     ) {
         require(
-            _dataContract.getFlightStatus(
-                getFlightKey(airline, flight, timestamp)
-            ) == STATUS_CODE_UNKNOWN,
+            _dataContract.getFlightStatus(getFlightKey(airline, flight, timestamp)) == STATUS_CODE_UNKNOWN,
             "Period for buying flight insurance has ended."
         );
         _;
@@ -226,6 +225,13 @@ contract FlightSuretyApp {
         emit PurchasedInsurance(msg.sender, airline, flight, msg.value);
     }
 
+    function withdraw() public requireIsOperational {
+        uint256 balance = _dataContract.getBalance(msg.sender);
+        require(balance > 0, "can't withdraw, invalid balance");
+        _dataContract.pay(msg.sender);
+        emit PessengerWithdraw(msg.sender, balance);
+    }
+
     /**
      * @dev Called after oracle has updated flight status
      *
@@ -235,10 +241,26 @@ contract FlightSuretyApp {
         string memory flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal pure {
-        //bytes32 key = getFlightKey(airline, flight, timestamp);
-        getFlightKey(airline, flight, timestamp);
-        if (statusCode == STATUS_CODE_LATE_AIRLINE) {}
+    ) internal {
+        bytes32 key = getFlightKey(airline, flight, timestamp);
+
+        uint8 status = _dataContract.getFlightStatus(key);
+        if(status != STATUS_CODE_UNKNOWN) {
+            return;
+        }
+
+        _dataContract.updateFlightStatus(key, statusCode);
+
+        if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+            // credit 1.5 x insurance to penssengers
+            uint256 pessengersCount = _dataContract.getPassengersCount(key);
+            for (uint256 index = 0; index < pessengersCount; index++) {
+                address pessenger = _dataContract.getPassenger(key, index);
+                uint256 insurance = _dataContract.getPassengerInsuranceValue(key, pessenger);
+                uint256 bonus = insurance.div(2);
+                _dataContract.creditInsurees(pessenger, insurance.add(bonus));
+            }
+        }
     }
 
     // Generate a request for oracles to fetch flight information

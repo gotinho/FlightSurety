@@ -46,6 +46,18 @@ import Web3 from 'web3';
 
             DOM.elid('pessenger-history').append(DOM.makeElement('p', `Pessenger ${pessenger} purchased insurance of ${value} ETH, for flight ${flight} from airline ${airline} `));
 
+        });
+        contract.subscribeOracleReport((error, event) => {
+            const flight = event.returnValues.flight;
+            const status = event.returnValues.status;
+
+            DOM.elid('oracle-events').append(DOM.makeElement('p', `Oracle respond flight ${flight} with status ${status}`));
+        });
+        contract.subscribeFlightStatusInfo((error, event) => {
+            const flight = event.returnValues.flight;
+            const status = event.returnValues.status;
+
+            DOM.elid('oracle-events').append(DOM.makeElement('p', `Flight ${flight} status ${status}`));
             showFlights(contract);
         });
 
@@ -126,16 +138,55 @@ import Web3 from 'web3';
         contract.passengers.forEach(p => {
             DOM.elid('pessenger').append(DOM.makeElement('option', { value: p }, p));
         });
-        DOM.elid('pessenger').addEventListener('change', async event => {
-            let pessenger = event.target.value;
-            let balance = await contract.getPessengerBalance(pessenger);
-            DOM.elid('pessenger-balance').innerText = balance;
+        async function loadPessengerBalance() {
+            let pessenger = DOM.elid('pessenger').value;
+            if (pessenger) {
+                let balance = await contract.getPessengerBalance(pessenger);
+                let wallet = await contract.web3.eth.getBalance(pessenger);
+                console.log(balance);
+                console.log(wallet);
+                DOM.elid('pessenger-balance').innerText = Web3.utils.fromWei(balance, 'ether');
+                DOM.elid('pessenger-wallet').innerText = Web3.utils.fromWei(wallet, 'ether');
+            }
+        }
+        DOM.elid('pessenger').addEventListener('change', async () => {
+            await loadPessengerBalance();
         });
+        DOM.elid('withdraw').onclick = async () => {
+            let pessenger = DOM.elid('pessenger').value;
+            try {
+                await contract.withdraw(pessenger);
+                await loadPessengerBalance();
+            } catch (e) {
+                console.log(e);
+            }
+        }
 
-
+        async function showFlights(contract) {
+            let flights = await contract.getRegisteredFlights();
+            let table = DOM.elid('tb-flights');
+            table.innerHTML = '';
+            flights.forEach(f => {
+                let line = DOM.makeElement('tr');
+                line.appendChild(DOM.makeElement('td', f.flight));
+                line.appendChild(DOM.makeElement('td', f.airline));
+                let btn = DOM.makeElement('button', { className: 'top-10 btn btn-primary' }, 'Buy Insurance');
+                btn.onclick = async () => {
+                    let pessenger = DOM.elid('pessenger').value;
+                    let value = DOM.elid('insurance-value').value;
+                    try {
+                        await contract.buyInsurance(pessenger, value, f.airline, f.flight, f.timestamp);
+                        await loadPessengerBalance();
+                    } catch (e) {
+                        DOM.elid('pessenger-history').append(DOM.makeElement('p', { className: 'text-error' }, e.message));
+                    }
+                }
+                line.appendChild(btn);
+                table.appendChild(line);
+            });
+        }
+        showFlights(contract);
     });
-
-    showFlights(contract);
 
 })();
 
@@ -154,24 +205,7 @@ function display(title, description, results) {
     displayDiv.append(section);
 }
 
-async function showFlights(contract) {
-    let flights = await contract.getRegisteredFlights();
-    let table = DOM.elid('tb-flights');
-    table.innerHTML = '';
-    flights.forEach(f => {
-        let line = DOM.makeElement('tr');
-        line.appendChild(DOM.makeElement('td', f.flight));
-        line.appendChild(DOM.makeElement('td', f.airline));
-        let btn = DOM.makeElement('button', { className: 'top-10 btn btn-primary' }, 'Buy Insurance');
-        btn.onclick = () => {
-            let pessenger = DOM.elid('pessenger').value;
-            let value = DOM.elid('insurance-value').value;
-            contract.buyInsurance(pessenger, value, f.airline, f.flight, f.timestamp);
-        }
-        line.appendChild(btn);
-        table.appendChild(line);
-    });
-}
+
 
 
 

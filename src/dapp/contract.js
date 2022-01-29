@@ -61,8 +61,10 @@ export default class Contract {
                 if (value < 10) {
                     await this.deposit(this.airlines[0], '10');
                 }
-                flights.forEach(flight => {
-                    this.registerFlight(this.airlines[0], flight.flight, flight.timestamp);
+                flights.forEach(async flight => {
+                    try {
+                        await this.registerFlight(this.airlines[0], flight.flight, flight.timestamp);
+                    } catch (e) { }
                 });
             });
 
@@ -77,12 +79,14 @@ export default class Contract {
             .call({ from: self.owner }, callback);
     }
 
-    fetchFlightStatus(flight, callback) {
+    async fetchFlightStatus(flight, callback) {
+        let flights = await this.getRegisteredFlights();
+        let f = flights.find(f => f.flight === flight);
         let self = this;
         let payload = {
-            airline: self.airlines[0],
+            airline: f.airline,
             flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
+            timestamp: f.timestamp
         }
         self.flightSuretyApp.methods
             .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
@@ -127,10 +131,15 @@ export default class Contract {
     subscribePurchasedInsurance(callback) {
         this.flightSuretyApp.events.PurchasedInsurance(callback);
     }
+    subscribeOracleReport(callback) {
+        this.flightSuretyApp.events.OracleReport(callback);
+    }
+    subscribeFlightStatusInfo(callback) {
+        this.flightSuretyApp.events.FlightStatusInfo(callback);
+    }
 
     async getRegisteredFlights() {
         let count = await this.flightSuretyData.methods.getFlightsCount().call();
-        console.log(count);
         let flights = [];
         for (let i = 0; i < count; i++) {
             try {
@@ -156,5 +165,9 @@ export default class Contract {
     buyInsurance(pessenger, value, airline, flight, timestamp) {
         const wei = this.web3.utils.toWei(value);
         return this.flightSuretyApp.methods.purchaseInsurance(airline, flight, timestamp).send({ from: pessenger, value: wei, gas: 200000 });
+    }
+
+    withdraw(pessenger) {
+        return this.flightSuretyApp.methods.withdraw().send({ from: pessenger });
     }
 }

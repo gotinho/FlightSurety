@@ -18,7 +18,7 @@ contract FlightSuretyData {
         uint8 statusCode;
         uint256 updatedTimestamp;        
         address airline;
-        string code;
+        string flight;
         mapping(address => uint256) passengerInsuranceValue;
         address[] passengers;
         uint256 passengersCount;
@@ -185,14 +185,9 @@ contract FlightSuretyData {
         return flightsCount;
     }
 
-    function getFlight(uint256 index) public view returns(bool isRegistered, uint8 status, address airline, string flight, uint256 timestamp) {
+    function getFlight(uint256 index) public view returns(bool , uint8 , address , string , uint256 ) {
         Flight memory f = flightsList[index];
-        isRegistered = f.isRegistered;
-        status = f.statusCode;
-        airline = f.airline;
-        flight = f.code;
-        timestamp = f.updatedTimestamp;
-        return (isRegistered,status,airline,flight,timestamp);
+        return (f.isRegistered,f.statusCode,f.airline,f.flight,f.updatedTimestamp);
     }
 
     function getBalance(address pessenger) public view returns(uint256) {
@@ -203,6 +198,10 @@ contract FlightSuretyData {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    function updateFlightStatus(bytes32 key, uint8 statusCode) external requireIsOperational requireAuthorizedCaller {
+        flights[key].statusCode = statusCode;
+    }
+
     /**
      * Register a future flight
      */
@@ -211,7 +210,8 @@ contract FlightSuretyData {
         Flight storage f = flights[key];
         f.isRegistered = true;
         f.updatedTimestamp = timestamp;
-        f.code = flight;
+        f.statusCode = 0;
+        f.flight = flight;
         f.airline = airline;
         flightsList.push(f);
         flightsCount = flightsCount.add(1);
@@ -270,10 +270,14 @@ contract FlightSuretyData {
     */
     function creditInsurees
                                 (
+                                    address pessenger,
+                                    uint256 value
                                 )
                                 external
-                                pure
+                                requireIsOperational
+                                requireAuthorizedCaller
     {
+        balances[pessenger] = balances[pessenger].add(value);
     }
     
 
@@ -283,10 +287,15 @@ contract FlightSuretyData {
     */
     function pay
                             (
+                                address pessenger
                             )
                             external
-                            pure
+                            requireIsOperational
+                            requireAuthorizedCaller
     {
+        uint256 payout = balances[pessenger];
+        balances[pessenger]= 0;
+        pessenger.transfer(payout);
     }
 
    /**
